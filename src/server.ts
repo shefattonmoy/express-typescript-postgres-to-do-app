@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import { Pool } from "pg";
 import dotenv from "dotenv";
 import path from "path";
@@ -46,6 +46,13 @@ const initDb = async () => {
 };
 
 initDb();
+
+const logger = (req: Request, res: Response, next: NextFunction) => {
+  console.log(`${req.method} ${req.path} - ${new Date().toISOString()}`);
+  next();
+};
+
+app.use(logger);
 
 
 // Home Route
@@ -156,6 +163,11 @@ app.get("/todos", async (req: Request, res: Response) => {
   catch(error: any){
     res.status(500).json({success: false, message: error.message});
   }
+});
+
+
+app.use((req: Request, res: Response) => {
+  res.status(404).json({success: false, message: "Route not found", path: req.path});
 });
 
 app.listen(port, () => {
